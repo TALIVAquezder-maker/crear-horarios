@@ -55,7 +55,7 @@
             z-index: 10;
         }
         /* Ocultar barra de scroll para vista limpia */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
@@ -68,76 +68,76 @@
 <body class="bg-gray-100 dark:bg-gray-900 font-sans h-screen flex flex-col overflow-hidden transition-colors duration-200">
 
     <!-- Header UAGRM -->
-    <header class="bg-red-800 text-white p-4 shadow-md flex justify-between items-center z-10 shrink-0">
-        <div>
+    <header class="bg-red-800 text-white p-4 shadow-md flex flex-col sm:flex-row justify-between items-center z-10 shrink-0 gap-3 sm:gap-0">
+        <div class="text-center sm:text-left">
             <h1 class="text-xl font-bold">UAGRM - Armador de Horarios</h1>
         </div>
         <div class="flex items-center gap-4">
-            <div class="text-right">
+            <div class="text-right hidden sm:block">
                 <p class="font-semibold text-sm">Período: 1/2026</p>
                 <p class="text-xs text-red-200">Santa Cruz</p>
             </div>
-            <button id="themeToggle" class="bg-red-900 hover:bg-red-700 p-2 rounded-full transition-colors ml-4" title="Alternar Modo Oscuro">
+            <button id="themeToggle" class="bg-red-900 hover:bg-red-700 p-2 rounded-full transition-colors" title="Alternar Modo Oscuro">
                 <!-- Icono de Sol / Luna -->
                 <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
         </div>
     </header>
 
-    <div class="flex flex-1 overflow-hidden">
-        <!-- Panel Lateral -->
-        <aside class="w-80 bg-white dark:bg-gray-800 shadow-lg flex flex-col z-10 transition-colors duration-200">
-            <div class="p-5 border-b dark:border-gray-700">
-                <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Agregar Materia</h2>
+    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <!-- Panel Lateral (Se adapta en móviles) -->
+        <aside class="w-full md:w-80 bg-white dark:bg-gray-800 shadow-lg flex flex-col z-10 transition-colors duration-200 shrink-0 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 max-h-[45vh] md:max-h-none">
+            <div class="p-4 md:p-5 border-b dark:border-gray-700 shrink-0">
+                <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-2 md:mb-4">Agregar Materia</h2>
                 
-                <div class="mb-4">
-                    <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Materia</label>
+                <div class="mb-2 md:mb-4">
+                    <label class="block text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-1">Materia</label>
                     <select id="subjectSelect" class="w-full border p-2 rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
                         <option value="">Seleccione una materia...</option>
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Grupo y Docente</label>
+                <div class="mb-2 md:mb-4">
+                    <label class="block text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-1">Grupo y Docente</label>
                     <select id="groupSelect" class="w-full border p-2 rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm" disabled>
                         <option value="">Seleccione grupo...</option>
                     </select>
                 </div>
 
-                <button id="addBtn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <button id="addBtn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base">
                     Agregar al Horario
                 </button>
             </div>
 
             <!-- Lista de materias agregadas -->
-            <div class="p-5 flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
-                <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-3 text-sm">Materias Inscritas</h3>
-                <ul id="addedList" class="space-y-3">
+            <div class="p-3 md:p-5 flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
+                <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-2 md:mb-3 text-xs md:text-sm">Materias Inscritas</h3>
+                <ul id="addedList" class="space-y-2 md:space-y-3">
                     <!-- Items se agregan aquí -->
                 </ul>
             </div>
 
             <!-- Botón de descarga -->
-            <div class="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
-                <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors flex justify-center items-center gap-2">
+            <div class="p-3 md:p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
+                <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors flex justify-center items-center gap-2 text-sm md:text-base">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Descargar Horario
                 </button>
             </div>
         </aside>
 
-        <!-- Calendario -->
-        <main class="flex-1 overflow-y-auto bg-white dark:bg-gray-900 p-6 transition-colors duration-200 flex justify-center">
+        <!-- Calendario (Permite scroll en móviles) -->
+        <main class="flex-1 overflow-auto bg-white dark:bg-gray-900 p-2 md:p-6 transition-colors duration-200">
             <!-- Contenedor que será capturado como imagen -->
-            <div id="captureArea" class="min-w-[800px] max-w-[1000px] w-full bg-white dark:bg-gray-900 p-4 rounded-lg">
+            <div id="captureArea" class="min-w-[800px] max-w-[1000px] w-full bg-white dark:bg-gray-900 p-2 md:p-4 rounded-lg mx-auto">
                 <!-- Días de la semana -->
                 <div class="flex ml-16 mb-2">
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Lunes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Martes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Miércoles</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Jueves</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Viernes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Sábado</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Lunes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Martes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Miércoles</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Jueves</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Viernes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Sábado</div>
                 </div>
 
                 <div class="flex relative">
@@ -566,16 +566,16 @@ Ma 16:45-18:15 185-11 |Ju 16:45-18:15 185-11 |
             
             mySchedule.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.className = "bg-white dark:bg-gray-700 p-3 rounded shadow-sm border-l-4 text-sm flex justify-between items-center transition-colors duration-200";
+                li.className = "bg-white dark:bg-gray-700 p-2 md:p-3 rounded shadow-sm border-l-4 text-xs md:text-sm flex justify-between items-center transition-colors duration-200";
                 li.style.borderLeftColor = classColors[index % classColors.length];
                 
                 li.innerHTML = `
                     <div>
                         <p class="font-bold text-gray-800 dark:text-gray-100">${item.subject.id}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Grp: ${item.group.id} - ${item.group.docente}</p>
+                        <p class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">Grp: ${item.group.id} - ${item.group.docente}</p>
                     </div>
                     <button onclick="removeClass(${index})" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 `;
                 list.appendChild(li);
