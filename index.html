@@ -68,9 +68,14 @@
 <body class="bg-gray-100 dark:bg-gray-900 font-sans h-screen flex flex-col overflow-hidden transition-colors duration-200">
 
     <!-- Header UAGRM -->
-    <header class="bg-red-800 text-white p-4 shadow-md flex flex-col sm:flex-row justify-between items-center z-10 shrink-0 gap-3 sm:gap-0">
-        <div class="text-center sm:text-left">
-            <h1 class="text-xl font-bold">UAGRM - Armador de Horarios</h1>
+    <header class="bg-red-800 text-white p-4 shadow-md flex justify-between items-center z-20 shrink-0">
+        <div class="flex items-center gap-3">
+            <!-- Botón de menú para celulares -->
+            <button id="mobileMenuBtn" class="md:hidden text-white hover:bg-red-700 p-2 rounded focus:outline-none" title="Abrir materias">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <h1 class="text-xl font-bold hidden sm:block">UAGRM - Armador de Horarios</h1>
+            <h1 class="text-lg font-bold sm:hidden">UAGRM</h1>
         </div>
         <div class="flex items-center gap-4">
             <div class="text-right hidden sm:block">
@@ -84,34 +89,45 @@
         </div>
     </header>
 
-    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <!-- Panel Lateral (Se adapta en móviles) -->
-        <aside class="w-full md:w-80 bg-white dark:bg-gray-800 shadow-lg flex flex-col z-10 transition-colors duration-200 shrink-0 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 max-h-[45vh] md:max-h-none">
+    <div class="flex flex-1 overflow-hidden relative">
+        
+        <!-- Overlay oscuro para celulares -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity"></div>
+
+        <!-- Panel Lateral (Se adapta en móviles como panel deslizable) -->
+        <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-[85vw] sm:w-80 bg-white dark:bg-gray-800 shadow-2xl md:shadow-lg flex flex-col z-50 md:z-10 transition-transform duration-300 transform -translate-x-full md:translate-x-0 border-r border-gray-200 dark:border-gray-700 h-full md:h-auto">
+            
+            <div class="p-4 md:p-5 border-b dark:border-gray-700 shrink-0 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
+                <h2 class="font-bold text-gray-800 dark:text-gray-100">Agregar Materia</h2>
+                <!-- Botón cerrar solo visible en móviles -->
+                <button id="closeSidebarBtn" class="md:hidden text-gray-500 hover:text-red-500 p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
             <div class="p-4 md:p-5 border-b dark:border-gray-700 shrink-0">
-                <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-2 md:mb-4">Agregar Materia</h2>
-                
-                <div class="mb-2 md:mb-4">
-                    <label class="block text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-1">Materia</label>
-                    <select id="subjectSelect" class="w-full border p-2 rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                <div class="mb-3 md:mb-4">
+                    <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Materia</label>
+                    <select id="subjectSelect" class="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
                         <option value="">Seleccione una materia...</option>
                     </select>
                 </div>
 
-                <div class="mb-2 md:mb-4">
-                    <label class="block text-xs md:text-sm text-gray-600 dark:text-gray-300 mb-1">Grupo y Docente</label>
-                    <select id="groupSelect" class="w-full border p-2 rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm" disabled>
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Grupo y Docente</label>
+                    <select id="groupSelect" class="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm" disabled>
                         <option value="">Seleccione grupo...</option>
                     </select>
                 </div>
 
-                <button id="addBtn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base">
+                <button id="addBtn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base shadow-md">
                     Agregar al Horario
                 </button>
             </div>
 
             <!-- Lista de materias agregadas -->
             <div class="p-3 md:p-5 flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
-                <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-2 md:mb-3 text-xs md:text-sm">Materias Inscritas</h3>
+                <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-2 md:mb-3 text-sm">Materias Inscritas</h3>
                 <ul id="addedList" class="space-y-2 md:space-y-3">
                     <!-- Items se agregan aquí -->
                 </ul>
@@ -119,14 +135,14 @@
 
             <!-- Botón de descarga -->
             <div class="p-3 md:p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
-                <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors flex justify-center items-center gap-2 text-sm md:text-base">
+                <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors flex justify-center items-center gap-2 text-sm md:text-base shadow-md">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Descargar Horario
                 </button>
             </div>
         </aside>
 
-        <!-- Calendario (Permite scroll en móviles) -->
+        <!-- Calendario (Permite scroll) -->
         <main class="flex-1 overflow-auto bg-white dark:bg-gray-900 p-2 md:p-6 transition-colors duration-200">
             <!-- Contenedor que será capturado como imagen -->
             <div id="captureArea" class="min-w-[800px] max-w-[1000px] w-full bg-white dark:bg-gray-900 p-2 md:p-4 rounded-lg mx-auto">
@@ -169,6 +185,21 @@
             }
         });
 
+        // Lógica Sidebar Móvil
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
         // Funcionalidad para Descargar como Imagen
         document.getElementById('downloadBtn').addEventListener('click', () => {
             const element = document.getElementById('captureArea');
@@ -176,6 +207,11 @@
             const originalText = btn.innerHTML;
             btn.innerHTML = 'Descargando...';
             btn.disabled = true;
+
+            // Ocultar sidebar temporalmente en móviles si está abierto al tomar captura (por seguridad)
+            if (window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
+                toggleSidebar();
+            }
 
             html2canvas(element, {
                 backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
@@ -638,6 +674,11 @@ Ma 16:45-18:15 185-11 |Ju 16:45-18:15 185-11 |
 
             renderCalendar();
             renderList();
+
+            // Cerrar sidebar en móviles tras agregar correctamente la materia
+            if (window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
+                toggleSidebar();
+            }
         });
 
         // Inicio
