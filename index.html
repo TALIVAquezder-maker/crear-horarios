@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario Universitario - UAGRM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        .calendar-container {
+            position: relative;
+            height: 960px; /* 16 horas * 60px */
+            border: 1px solid #e5e7eb;
+            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 100% 60px; /* Grilla de 1 hora */
+        }
+        .dark .calendar-container {
+            border-color: #374151;
+            background-image: linear-gradient(#374151 1px, transparent 1px);
+        }
+        .time-label {
+            height: 60px;
+            box-sizing: border-box;
+            border-bottom: 1px solid transparent;
+            text-align: right;
+            padding-right: 8px;
+            color: #6b7280;
+            font-size: 0.875rem;
+            position: relative;
+            top: -10px;
+        }
+        .dark .time-label {
+            color: #9ca3af;
+        }
+        .class-block {
+            position: absolute;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            line-height: 1.2;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid rgba(0,0,0,0.3);
+            color: #ffffff; /* Texto blanco para resaltar con colores vívidos */
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.6); /* Sombra para mejor legibilidad */
+            transition: transform 0.2s;
+        }
+        .class-block:hover {
+            transform: scale(1.02);
+            z-index: 10;
+        }
+        /* Ocultar barra de scroll para vista limpia */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .dark ::-webkit-scrollbar-track { background: #1f2937; }
+        .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 font-sans h-screen flex flex-col overflow-hidden transition-colors duration-200">
+
+    <!-- Header UAGRM -->
+    <header class="bg-red-800 text-white p-4 shadow-md flex justify-between items-center z-10 shrink-0">
+        <div>
+            <h1 class="text-xl font-bold">UAGRM - Armador de Horarios</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <p class="font-semibold text-sm">Período: 1/2026</p>
+                <p class="text-xs text-red-200">Santa Cruz</p>
+            </div>
+            <button id="themeToggle" class="bg-red-900 hover:bg-red-700 p-2 rounded-full transition-colors ml-4" title="Alternar Modo Oscuro">
+                <!-- Icono de Sol / Luna -->
+                <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Panel Lateral -->
+        <aside class="w-80 bg-white dark:bg-gray-800 shadow-lg flex flex-col z-10 transition-colors duration-200">
+            <div class="p-5 border-b dark:border-gray-700">
+                <h2 class="font-bold text-gray-800 dark:text-gray-100 mb-4">Agregar Materia</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Materia</label>
+                    <select id="subjectSelect" class="w-full border p-2 rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                        <option value="">Seleccione una materia...</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Grupo y Docente</label>
+                    <select id="groupSelect" class="w-full border p-2 rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm" disabled>
+                        <option value="">Seleccione grupo...</option>
+                    </select>
+                </div>
+
+                <button id="addBtn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Agregar al Horario
+                </button>
+            </div>
+
+            <!-- Lista de materias agregadas -->
+            <div class="p-5 flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
+                <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-3 text-sm">Materias Inscritas</h3>
+                <ul id="addedList" class="space-y-3">
+                    <!-- Items se agregan aquí -->
+                </ul>
+            </div>
+
+            <!-- Botón de descarga -->
+            <div class="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+                <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors flex justify-center items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Descargar Horario
+                </button>
+            </div>
+        </aside>
+
+        <!-- Calendario -->
+        <main class="flex-1 overflow-y-auto bg-white dark:bg-gray-900 p-6 transition-colors duration-200 flex justify-center">
+            <!-- Contenedor que será capturado como imagen -->
+            <div id="captureArea" class="min-w-[800px] max-w-[1000px] w-full bg-white dark:bg-gray-900 p-4 rounded-lg">
+                <!-- Días de la semana -->
+                <div class="flex ml-16 mb-2">
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Lunes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Martes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Miércoles</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Jueves</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Viernes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2">Sábado</div>
+                </div>
+
+                <div class="flex relative">
+                    <!-- Eje de horas -->
+                    <div class="w-16 shrink-0 border-r border-gray-200 dark:border-gray-700" id="timeAxis">
+                        <!-- Generado por JS (07:00 a 22:00) -->
+                    </div>
+
+                    <!-- Contenedor de las cajas del horario -->
+                    <div class="calendar-container flex-1" id="calendar">
+                        <!-- Clases dibujadas por JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Funcionalidad de Modo Oscuro
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if(document.documentElement.classList.contains('dark')) {
+                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+            } else {
+                themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+            }
+        });
+
+        // Funcionalidad para Descargar como Imagen
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const element = document.getElementById('captureArea');
+            const btn = document.getElementById('downloadBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Descargando...';
+            btn.disabled = true;
+
+            html2canvas(element, {
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
+                scale: 2 // Mayor calidad
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Horario_UAGRM.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error('Error al generar la imagen', err);
+                alert('Ocurrió un error al intentar descargar la imagen.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        });
+
+        // Datos extraídos y formateados para su fácil procesamiento
+        const rawData = `
+DER300-DERECHO LABORAL, SU PROCEDIMIENTO Y PRACTICA FOREN
+A1-POR DESIGNAR
+Ma 08:30-10:00 185-14 |Sa 11:30-13:00 185-14 |
+B1-MENACHO FERRANTE MANFREDO
+Ma 15:15-16:45 185-08 |Ju 15:15-16:45 185-08 |
+C1-POR DESIGNAR
+Mi 18:15-19:45 0|Sa 08:30-10:00 0|
+D1-POR DESIGNAR
+Lu 07:00-08:30 185-09 |Mi 07:00-08:30 185-09 |
+DV-SUAREZ AGUILAR ANTONIO
+E1-POR DESIGNAR
+Lu 15:15-16:45 0|Sa 13:45-15:15 0|
+F1-POR DESIGNAR
+Ma 18:15-19:45 185-10 |Ma 19:45-21:15 185-10 |
+G1-SUAREZ CHAVEZ ISACIO
+Mi 08:30-10:00 185-05 |Mi 07:00-08:30 185-05 |
+H1-ESPECHI VARGAS MIGUEL OSVALDO
+Ju 13:45-15:15 0|Sa 19:45-21:15 185-02 |
+I1-MENACHO FERRANTE MANFREDO
+Lu 19:45-21:15 185-06 |Sa 11:30-13:00 0|
+J1-VILLAGOMEZ HERBAS JOSE
+Ma 07:00-08:30 185-15 |Ju 07:00-08:30 185-15 |
+K1-ESPECHI VARGAS MIGUEL OSVALDO
+Lu 18:15-19:45 185-15 |Vi 18:15-19:45 185-15 |
+L1-ROJAS BONILLA JORGE FRANCISCO
+Ma 10:00-13:00 185-01 |
+M1-ESPECHI VARGAS MIGUEL OSVALDO
+Ma 21:15-22:45 185-12 |Ju 18:15-19:45 185-12 |
+N1-POR DESIGNAR
+Ma 21:15-22:45 0|Sa 07:00-08:30 0|
+
+DER303-DERECHO CIVIL IV (CONTRATOS)
+A1-OLMOS AMELUNGE JAIME ROLANDO
+Mi 10:45-13:00 185-14 |Vi 08:30-10:00 185-14 |
+B1-OLMOS AMELUNGE JAIME ROLANDO
+Lu 13:45-16:00 185-08 |Ju 13:45-15:15 185-08 |
+C1-OLMOS AMELUNGE JAIME ROLANDO
+Lu 21:15-22:45 185-17 |Mi 19:45-22:00 185-17 |
+D1-OLMOS AMELUNGE JAIME ROLANDO
+Ma 09:15-11:30 185-09 |Vi 10:00-11:30 185-09 |
+DV-POR DESIGNAR
+E1-OLMOS AMELUNGE JAIME ROLANDO
+Ma 13:45-16:00 185-05 |Ju 15:15-16:45 185-05 |
+F1-VERDUGUEZ TORREZ FREDDY OSVALDO
+Ju 18:15-19:45 185-10 |Sa 10:45-13:00 0|
+G1-ABUJDER BALDERAS MARIA DEL CARMEN
+Ma 10:00-12:15 185-05 |Vi 10:00-11:30 185-05 |
+H1-SAAVEDRA GUARDIA JUAN CARLOS
+Lu 13:45-16:00 185-02 |Ju 15:15-16:45 185-02 |
+I1-JURADO PEREDO GUALBERTO
+Lu 18:15-19:45 185-06 |Ju 18:15-20:30 185-06 |
+J1-ROMERO CUELLAR HERLAN
+Lu 08:30-10:45 185-15 |Mi 07:00-08:30 185-15 |
+K1-PAREDES VILLALBA VILMA MARGARITA
+Ma 18:15-19:45 185-15 |Ju 18:15-20:30 185-15 |
+L1-OLMOS AMELUNGE JAIME ROLANDO
+Mi 08:30-10:45 185-01 |Ju 08:30-10:00 185-01 |
+M1-SALCES SANTISTEVAN HUGO
+Lu 19:45-22:00 185-12 |Ma 19:45-21:15 185-12 |
+N1-MANRIQUE OSINAGA ANGEL DAVID
+Ju 20:30-22:45 185-09 |Vi 21:15-22:45 185-09 |
+
+DER304-DERECHO PROCESAL CIVIL Y PRAC. FORENSE
+A1-VERA CANELLAS DE GIL TERESA
+Ma 07:00-08:30 185-14 |Ju 07:00-08:30 185-14 |Vi 10:00-11:30 185-14 |
+B1-SUAREZ ALVAREZ PABLO JOSE
+Ma 13:45-15:15 185-08 |Mi 15:15-16:45 185-08 |Ju 16:45-18:15 185-08 |
+C1-POR DESIGNAR
+Lu 19:45-21:15 185-17 |Ma 19:45-21:15 185-17 |Vi 21:15-22:45 185-17 |
+D1-POR DESIGNAR
+Ma 08:30-09:15 185-09 |Mi 11:30-13:00 185-09 |Vi 11:30-13:00 185-09 |
+DV-ARROYO BALBOA CARLOS MAURICIO
+E1-CLAROS ROJAS RAMIRO
+Mi 16:45-18:15 185-05 |Ju 16:45-18:15 185-05 |Vi 16:45-18:15 185-05 |
+F1-SEVERICHE SARAVIA MISAEL
+Lu 19:45-21:15 185-10 |Ma 21:15-22:45 185-10 |Ju 21:15-22:45 185-10 |
+G1-PARADA MENDIA ALEX
+Ju 11:30-13:00 185-05 |Vi 08:30-10:00 185-05 |Sa 07:00-08:30 185-05 |
+H1-SEVERICHE SARAVIA MISAEL
+Lu 16:00-18:15 185-02 |Mi 16:00-18:15 185-02 |
+I1-ROMERO CUELLAR HERLAN
+Mi 21:15-22:45 185-06 |Sa 07:00-10:00 0|
+J1-MORON SANCHEZ JACINTO
+Mi 08:30-10:45 185-15 |Vi 08:30-10:45 185-15 |
+K1-ARIAS LAZCANO LUIS ALBERTO
+Lu 20:30-22:45 185-15 |Ju 20:30-22:45 185-15 |
+L1-COCA ECHEVERRIA ALFONSO
+Lu 08:30-10:00 185-01 |Mi 10:45-12:15 185-01 |Mi 12:15-13:45 185-01 |
+M1-PARADA MENDIA ALEX
+Ma 18:15-19:45 185-12 |Ju 21:15-22:45 185-12 |Vi 21:15-22:45 185-12 |
+N1-SOTO PINTO REMBERTO
+Lu 18:15-20:30 185-09 |Ju 18:15-20:30 185-09 |
+
+DER305-DERECHO PENAL II
+A1-APONTE AMELUNGE JOSE ERNESTO
+Mi 07:00-08:30 170-08 |Vi 07:00-08:30 170-08 |
+B1-ECHEVERRIA VALLE JUVENAL HERNAN
+Mi 13:45-15:15 185-08 |Vi 13:45-15:15 185-08 |
+C1-DABDOUB LOPEZ JOSE LUIS
+Vi 18:15-19:45 185-17 |Sa 07:00-08:30 185-15 |
+D1-PEREZ VALENZUELA JORGE
+Ma 07:00-08:30 185-09 |Ju 07:00-08:30 185-09 |
+DV-MANSILLA ARIAS ALEJANDRO
+E1-APONTE AMELUNGE JOSE ERNESTO
+Lu 13:45-15:15 170-08 |Vi 13:45-15:15 170-08 |
+F1-PADILLA BALCAZAR GREGORIO IVES
+Mi 19:45-21:15 185-10 |Sa 19:45-21:15 185-10 |
+G1-ULLOA PEÑA OSWALDO
+Ma 07:00-08:30 185-05 |Ju 08:30-10:00 185-05 |
+H1-PADILLA BALCAZAR GREGORIO IVES
+Ma 13:45-15:15 185-02 |Vi 13:45-15:15 185-02 |
+I1-DURAN BERNAL ALEXANDER
+Lu 21:15-22:45 185-06 |Mi 18:15-19:45 185-06 |
+J1-DURAN BERNAL ALEXANDER
+Mi 11:30-13:00 185-15 |Ju 08:30-10:00 185-15 |
+K1-LIJERON BANEGAS SAUL
+Mi 18:15-19:45 185-15 |Vi 19:45-21:15 185-15 |
+L1-EGUEZ JUSTINIANO JULIO
+Lu 07:00-08:30 185-01 |Mi 07:00-08:30 185-01 |
+M1-LIJERON BANEGAS SAUL
+Ju 19:45-21:15 185-12 |Sa 08:30-10:00 0|
+N1-PADILLA BALCAZAR GREGORIO IVES
+Ma 18:15-19:45 185-09 |Sa 08:30-10:00 185-09 |
+
+DER306-DERECHO PROCESAL PENAL Y PRAC. FORENSE
+A1-MANSILLA ARIAS ALEJANDRO
+Lu 07:00-08:30 185-14 |Ma 10:45-12:15 185-14 |Ju 08:30-10:00 185-14 |
+B1-HERRERA AÑEZ WILLIAM
+Ma 16:45-18:15 185-08 |Vi 16:45-18:15 185-08 |Sa 08:30-10:00 0|
+C1-HERRERA AÑEZ WILLIAM
+Ma 18:15-19:45 185-17 |Ju 18:15-19:45 185-17 |Vi 19:45-21:15 185-17 |
+D1-VIDAL ROSADO DANIEL ALFONSO
+Mi 10:00-11:30 185-09 |Ju 10:00-11:30 185-09 |Vi 08:30-10:00 185-09 |
+DV-QUEZADA GONZALES GERMAN JESUS
+E1-QUEZADA GONZALES GERMAN JESUS
+Mi 13:45-15:15 185-05 |Sa 08:30-10:00 0|Sa 18:15-19:45 0|
+F1-ALFARO LANZA JOSE LUIS
+Lu 21:15-22:45 185-10 |Mi 18:15-19:45 185-10 |Vi 18:15-19:45 185-10 |
+G1-MANSILLA ARIAS ALEJANDRO
+Lu 10:00-11:30 185-05 |Ma 08:30-10:00 185-05 |Ju 10:00-11:30 185-05 |
+H1-RUIZ CARRILLO DEMETRIO
+Ma 16:45-18:15 185-02 |Ju 16:45-18:15 185-02 |Sa 07:00-08:30 0|
+I1-CAPOBIANCO ACHA ROBERTO
+Ma 19:45-21:15 185-06 |Ma 21:15-22:45 185-06 |Vi 18:15-19:45 185-06 |
+J1-VIDAL ROSADO DANIEL ALFONSO
+Ma 10:00-11:30 185-15 |Ma 08:30-10:00 185-15 |Ju 11:30-13:00 185-15 |
+K1-MORENO PAZ FREDDY EDWAR
+Mi 21:15-22:45 185-15 |Vi 21:15-22:45 185-15 |Sa 16:00-17:30 0|
+L1-GUZMAN CORONADO ROGER
+Ma 08:30-10:00 185-01 |Ju 11:30-13:00 185-01 |Vi 07:00-08:30 185-01 |
+M1-MORON SANCHEZ JACINTO
+Lu 18:15-19:45 185-12 |Mi 18:15-19:45 185-12 |Sa 07:00-08:30 185-12 |
+N1-LIJERON BANEGAS SAUL
+Mi 19:45-21:15 185-09 |Mi 21:15-22:45 185-09 |Sa 10:45-12:15 185-17 |
+
+DER401-DERECHO COMERCIAL Y EMPRESARIAL
+A1-LOAYZA SALVATIERRA GRACIELA
+Vi 07:00-08:30 185-11 |Sa 10:00-12:15 185-05 |
+B1-CORONADO LOAIZA JULIO
+Vi 13:45-15:15 185-03 |Sa 07:00-09:15 185-10 |
+C1-SAAVEDRA GUARDIA JUAN CARLOS
+Vi 19:45-21:15 185-08 |Sa 10:45-13:00 185-08 |
+D1-VERDUGUEZ TORREZ FREDDY OSVALDO
+Vi 11:30-13:45 185-17 |Sa 09:15-10:45 185-17 |
+DV-POR DESIGNAR
+E1-VERDUGUEZ TORREZ FREDDY OSVALDO
+Ma 16:45-18:15 185-04 |Sa 07:00-09:15 185-04 |
+F1-GOMEZ BOLAND JAIME RONALD
+Lu 19:45-21:15 185-07 |Ju 20:30-22:45 185-07 |
+G1-SAAVEDRA GUARDIA JUAN CARLOS
+Lu 10:00-11:30 185-12 |Mi 10:45-13:00 185-12 |
+H1-FRANCO PANIAGUA HUGO
+Mi 21:15-22:45 185-03 |Sa 11:30-13:45 185-03 |
+I1-ARDUZ VARGAS YENNY TERESA
+Ju 10:00-11:30 185-16 |Vi 10:45-13:00 185-16 |
+K1-LOAYZA SALVATIERRA GRACIELA
+Lu 19:45-21:15 185-04 |Mi 19:45-22:00 185-04 |
+L1-AYALA PERROGON LUDWING
+Lu 15:15-16:45 185-11 |Vi 16:00-18:15 185-11 |
+
+DER404-DERECHO BANCARIO BURSATIL Y COOPERATIVO
+A1-CASTEDO VACA JORGE
+Lu 08:30-10:00 185-11 |Ma 09:15-10:45 185-11 |
+B1-ROCA ARTEAGA RAUL
+Lu 13:45-15:15 185-03 |Vi 16:45-18:15 185-03 |
+C1-OSINAGA RIBERA OSCAR
+Ma 18:15-19:45 185-08 |Ju 21:15-22:45 185-08 |
+D1-CARDONA ALVAREZ GERMAN ROMULO
+Ma 11:30-13:00 185-17 |Vi 07:00-08:30 185-17 |
+DV-GONZALES CORTEZ JORGE
+E1-ALFARO LANZA JOSE LUIS
+Mi 13:45-15:15 185-04 |Vi 13:45-15:15 185-04 |
+F1-CASTEDO VACA JORGE
+Ma 19:45-21:15 185-07 |Vi 19:45-21:15 185-07 |
+G1-MENDEZ EGUEZ FRANCISCO
+Ju 07:00-08:30 185-12 |Vi 08:30-10:00 185-12 |
+H1-ECHEVERRIA VALLE JUVENAL HERNAN
+Ma 18:15-19:45 185-03 |Vi 18:15-19:45 185-03 |
+I1-ROCA ARTEAGA RAUL
+Lu 08:30-10:00 185-16 |Ma 11:30-13:00 185-16 |
+K1-ARRAZOLA WEISE MARCELO
+Ju 21:15-22:45 185-04 |Vi 19:00-20:30 185-04 |
+L1-PAREDES VILLALBA VILMA MARGARITA
+Ma 16:45-18:15 185-11 |Ju 16:45-18:15 185-11 |
+`;
+
+        // Colores vívidos y distintos para las materias
+        const classColors = [
+            '#e63946', '#2a9d8f', '#e76f51', '#3a86ff', '#8338ec', 
+            '#ff006e', '#fb5607', '#06d6a0', '#118ab2', '#d90429', 
+            '#9d4edd', '#f4a261', '#2ec4b6', '#c1121f', '#7209b7'
+        ];
+        
+        let subjects = {};
+        let mySchedule = [];
+
+        // Función para convertir "HH:MM" a minutos desde las 00:00
+        function timeToMinutes(t) {
+            let [h, m] = t.split(':').map(Number);
+            return (h * 60) + m;
+        }
+
+        // Parseador del texto de la UAGRM
+        function parseData() {
+            const lines = rawData.split('\n').map(l => l.trim()).filter(l => l);
+            let currentSubj = null;
+
+            lines.forEach(line => {
+                let subjMatch = line.match(/^(DER\d{3})-(.*)/);
+                if (subjMatch) {
+                    currentSubj = subjMatch[1];
+                    subjects[currentSubj] = { id: currentSubj, name: subjMatch[2], groups: {} };
+                    return;
+                }
+                
+                let groupMatch = line.match(/^([A-Z0-9]+)-(.*)/);
+                if (groupMatch && !line.includes('|')) {
+                    subjects[currentSubj].groups[groupMatch[1]] = {
+                        id: groupMatch[1],
+                        docente: groupMatch[2],
+                        sessions: []
+                    };
+                    return;
+                }
+
+                if (line.includes('|') && currentSubj) {
+                    const groupIds = Object.keys(subjects[currentSubj].groups);
+                    const lastGroup = groupIds[groupIds.length - 1];
+                    
+                    line.split('|').forEach(session => {
+                        let parts = session.trim().split(' ');
+                        if (parts.length >= 2) {
+                            subjects[currentSubj].groups[lastGroup].sessions.push({
+                                dia: parts[0],
+                                times: parts[1],
+                                aula: parts.slice(2).join(' ') || 'Sin Aula'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Renderizar eje de horas
+        function renderTimeAxis() {
+            const axis = document.getElementById('timeAxis');
+            for(let h = 7; h <= 22; h++) {
+                let div = document.createElement('div');
+                div.className = 'time-label';
+                div.innerText = h.toString().padStart(2, '0') + ':00';
+                axis.appendChild(div);
+            }
+        }
+
+        // Inicializar combos
+        function initSelects() {
+            const subjSelect = document.getElementById('subjectSelect');
+            Object.values(subjects).forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.id;
+                opt.text = s.id + ' - ' + s.name;
+                subjSelect.appendChild(opt);
+            });
+
+            subjSelect.addEventListener('change', (e) => {
+                const grpSelect = document.getElementById('groupSelect');
+                grpSelect.innerHTML = '<option value="">Seleccione grupo...</option>';
+                const addBtn = document.getElementById('addBtn');
+                
+                if(!e.target.value) {
+                    grpSelect.disabled = true;
+                    addBtn.disabled = true;
+                    return;
+                }
+                
+                grpSelect.disabled = false;
+                const groups = subjects[e.target.value].groups;
+                Object.values(groups).forEach(g => {
+                    let opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.text = `Grupo ${g.id} - ${g.docente}`;
+                    grpSelect.appendChild(opt);
+                });
+            });
+
+            document.getElementById('groupSelect').addEventListener('change', (e) => {
+                document.getElementById('addBtn').disabled = !e.target.value;
+            });
+        }
+
+        // Calcular posición Y en el calendario
+        function getTimeStyles(timeString) {
+            const [start, end] = timeString.split('-');
+            const startMins = timeToMinutes(start) - (7 * 60); // Base 07:00
+            const endMins = timeToMinutes(end) - (7 * 60);
+            
+            return {
+                top: startMins + 'px',   // 1px = 1min
+                height: (endMins - startMins) + 'px'
+            };
+        }
+
+        const dayMap = { 'Lu': 0, 'Ma': 1, 'Mi': 2, 'Ju': 3, 'Vi': 4, 'Sa': 5 };
+
+        function renderCalendar() {
+            const container = document.getElementById('calendar');
+            container.innerHTML = '';
+            
+            // Dibujar lineas divisorias de columnas usando clases CSS en lugar de estilos fijos
+            for(let i=1; i<6; i++){
+                let line = document.createElement('div');
+                line.className = 'absolute top-0 bottom-0 border-l border-gray-200 dark:border-gray-700';
+                line.style.left = (i * 16.66) + '%';
+                container.appendChild(line);
+            }
+
+            mySchedule.forEach((item, index) => {
+                const color = classColors[index % classColors.length];
+                
+                item.group.sessions.forEach(session => {
+                    let block = document.createElement('div');
+                    block.className = 'class-block';
+                    block.style.backgroundColor = color;
+                    
+                    let colIndex = dayMap[session.dia];
+                    block.style.left = (colIndex * 16.66) + '%';
+                    block.style.width = '16.66%';
+                    
+                    const pos = getTimeStyles(session.times);
+                    block.style.top = pos.top;
+                    block.style.height = pos.height;
+
+                    block.innerHTML = `
+                        <strong>${item.subject.id} (${item.group.id})</strong><br>
+                        ${session.times}<br>
+                        Aula: ${session.aula}
+                    `;
+                    container.appendChild(block);
+                });
+            });
+        }
+
+        function renderList() {
+            const list = document.getElementById('addedList');
+            list.innerHTML = '';
+            
+            mySchedule.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = "bg-white dark:bg-gray-700 p-3 rounded shadow-sm border-l-4 text-sm flex justify-between items-center transition-colors duration-200";
+                li.style.borderLeftColor = classColors[index % classColors.length];
+                
+                li.innerHTML = `
+                    <div>
+                        <p class="font-bold text-gray-800 dark:text-gray-100">${item.subject.id}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Grp: ${item.group.id} - ${item.group.docente}</p>
+                    </div>
+                    <button onclick="removeClass(${index})" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        window.removeClass = function(index) {
+            mySchedule.splice(index, 1);
+            renderCalendar();
+            renderList();
+        }
+
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const subjId = document.getElementById('subjectSelect').value;
+            const groupId = document.getElementById('groupSelect').value;
+            
+            if(mySchedule.find(s => s.subject.id === subjId)) {
+                alert("Ya tienes agregada esta materia.");
+                return;
+            }
+
+            const subject = subjects[subjId];
+            const group = subject.groups[groupId];
+            
+            if(group.sessions.length === 0) {
+                alert("Este grupo no tiene horarios definidos en el sistema.");
+                return;
+            }
+
+            // --- DETECCIÓN DE CHOQUES DE HORARIO ---
+            for (let newSession of group.sessions) {
+                let [newStartStr, newEndStr] = newSession.times.split('-');
+                let newStart = timeToMinutes(newStartStr);
+                let newEnd = timeToMinutes(newEndStr);
+
+                for (let existingItem of mySchedule) {
+                    for (let existingSession of existingItem.group.sessions) {
+                        if (existingSession.dia === newSession.dia) {
+                            let [exStartStr, exEndStr] = existingSession.times.split('-');
+                            let exStart = timeToMinutes(exStartStr);
+                            let exEnd = timeToMinutes(exEndStr);
+
+                            // Condición de solapamiento
+                            if (newStart < exEnd && newEnd > exStart) {
+                                alert(`¡Choque de horarios!\n\nLa materia "${subject.id} (${groupId})" choca con "${existingItem.subject.id} (${existingItem.group.id})" el día ${newSession.dia} en el horario de ${existingSession.times}.`);
+                                return; // Evita que se agregue
+                            }
+                        }
+                    }
+                }
+            }
+
+            mySchedule.push({ subject, group });
+            
+            // Limpiar combos
+            document.getElementById('subjectSelect').value = '';
+            document.getElementById('groupSelect').innerHTML = '<option value="">Seleccione grupo...</option>';
+            document.getElementById('groupSelect').disabled = true;
+            document.getElementById('addBtn').disabled = true;
+
+            renderCalendar();
+            renderList();
+        });
+
+        // Inicio
+        parseData();
+        renderTimeAxis();
+        initSelects();
+
+    </script>
+</body>
+</html>
