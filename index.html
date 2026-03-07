@@ -40,15 +40,19 @@
         .class-block {
             position: absolute;
             border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            line-height: 1.2;
+            padding: 6px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border-left: 4px solid rgba(0,0,0,0.3);
-            color: #ffffff; /* Texto blanco para resaltar con colores vívidos */
-            text-shadow: 0px 1px 2px rgba(0,0,0,0.6); /* Sombra para mejor legibilidad */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-left: 4px solid rgba(0,0,0,0.4);
+            color: #ffffff; 
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8); /* Sombra fuerte para legibilidad */
             transition: transform 0.2s;
+            /* Flexbox para centrar contenido */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
         }
         .class-block:hover {
             transform: scale(1.02);
@@ -68,21 +72,21 @@
 <body class="bg-gray-100 dark:bg-gray-900 font-sans h-screen flex flex-col overflow-hidden transition-colors duration-200">
 
     <!-- Header UAGRM -->
-    <header class="bg-red-800 text-white p-4 shadow-md flex justify-between items-center z-20 shrink-0">
+    <header class="bg-blue-800 text-white p-4 shadow-md flex justify-between items-center z-20 shrink-0">
         <div class="flex items-center gap-3">
             <!-- Botón de menú para celulares -->
-            <button id="mobileMenuBtn" class="md:hidden text-white hover:bg-red-700 p-2 rounded focus:outline-none" title="Abrir materias">
+            <button id="mobileMenuBtn" class="md:hidden text-white hover:bg-blue-700 p-2 rounded focus:outline-none" title="Abrir materias">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
-            <h1 class="text-xl font-bold hidden sm:block">UAGRM - Crea tu Horario</h1>
+            <h1 class="text-xl font-bold hidden sm:block">UAGRM - CREA TU HORARIO</h1>
             <h1 class="text-lg font-bold sm:hidden">UAGRM</h1>
         </div>
         <div class="flex items-center gap-4">
             <div class="text-right hidden sm:block">
                 <p class="font-semibold text-sm">Período: 1/2026</p>
-                <p class="text-xs text-red-200">Santa Cruz</p>
+                <p class="text-xs text-blue-200">Santa Cruz</p>
             </div>
-            <button id="themeToggle" class="bg-red-900 hover:bg-red-700 p-2 rounded-full transition-colors" title="Alternar Modo Oscuro">
+            <button id="themeToggle" class="bg-blue-900 hover:bg-blue-700 p-2 rounded-full transition-colors" title="Alternar Modo Oscuro">
                 <!-- Icono de Sol / Luna -->
                 <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
@@ -108,19 +112,19 @@
             <div class="p-4 md:p-5 border-b dark:border-gray-700 shrink-0">
                 <div class="mb-3 md:mb-4">
                     <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Materia</label>
-                    <select id="subjectSelect" class="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm">
+                    <select id="subjectSelect" class="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
                         <option value="">Seleccione una materia...</option>
                     </select>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Grupo y Docente</label>
-                    <select id="groupSelect" class="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 text-sm" disabled>
+                    <select id="groupSelect" class="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" disabled>
                         <option value="">Seleccione grupo...</option>
                     </select>
                 </div>
 
-                <button id="addBtn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base shadow-md">
+                <button id="addBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base shadow-md">
                     Agregar al Horario
                 </button>
             </div>
@@ -135,7 +139,7 @@
 
             <!-- Botón de descarga -->
             <div class="p-3 md:p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
-                <button id="downloadBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors flex justify-center items-center gap-2 text-sm md:text-base shadow-md">
+                <button id="downloadBtn" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors flex justify-center items-center gap-2 text-sm md:text-base shadow-md">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Descargar Horario
                 </button>
@@ -148,12 +152,12 @@
             <div id="captureArea" class="min-w-[800px] max-w-[1000px] w-full bg-white dark:bg-gray-900 p-2 md:p-4 rounded-lg mx-auto">
                 <!-- Días de la semana -->
                 <div class="flex ml-16 mb-2">
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Lunes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Martes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Miércoles</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Jueves</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Viernes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-red-700 pb-2 text-sm md:text-base">Sábado</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Lunes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Martes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Miércoles</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Jueves</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Viernes</div>
+                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Sábado</div>
                 </div>
 
                 <div class="flex relative">
@@ -587,9 +591,9 @@ Ma 16:45-18:15 185-11 |Ju 16:45-18:15 185-11 |
                     block.style.height = pos.height;
 
                     block.innerHTML = `
-                        <strong>${item.subject.id} (${item.group.id})</strong><br>
-                        ${session.times}<br>
-                        Aula: ${session.aula}
+                        <strong class="text-[0.85rem] leading-tight mb-1">${item.subject.id} (${item.group.id})</strong>
+                        <span class="text-xs font-medium">${session.times}</span>
+                        <span class="text-[0.7rem] font-medium opacity-90">Aula: ${session.aula}</span>
                     `;
                     container.appendChild(block);
                 });
