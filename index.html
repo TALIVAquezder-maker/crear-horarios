@@ -131,7 +131,7 @@
 
             <!-- Lista de materias agregadas -->
             <div class="p-3 md:p-5 flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
-                <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-2 md:mb-3 text-sm">Materias Inscritas</h3>
+                <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-2 md:mb-3 text-sm">Materias Inscritas <span id="materiasCounter" class="text-blue-600 dark:text-blue-400">(0)</span></h3>
                 <ul id="addedList" class="space-y-2 md:space-y-3">
                     <!-- Items se agregan aquí -->
                 </ul>
@@ -647,7 +647,10 @@ Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
 
         function renderList() {
             const list = document.getElementById('addedList');
+            const counter = document.getElementById('materiasCounter');
             list.innerHTML = '';
+            
+            if (counter) counter.innerText = `(${mySchedule.length})`;
             
             mySchedule.forEach((item, index) => {
                 const li = document.createElement('li');
