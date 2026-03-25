@@ -12,52 +12,19 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        .calendar-container {
-            position: relative;
-            height: 960px; /* 16 horas * 60px */
-            border: 1px solid #e5e7eb;
-            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 100% 60px; /* Grilla de 1 hora */
-        }
-        .dark .calendar-container {
-            border-color: #374151;
-            background-image: linear-gradient(#374151 1px, transparent 1px);
-        }
-        .time-label {
-            height: 60px;
-            box-sizing: border-box;
-            border-bottom: 1px solid transparent;
-            text-align: right;
-            padding-right: 8px;
-            color: #6b7280;
-            font-size: 0.875rem;
-            position: relative;
-            top: -10px;
-        }
-        .dark .time-label {
-            color: #9ca3af;
-        }
-        .class-block {
-            position: absolute;
-            border-radius: 6px;
-            padding: 6px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border-left: 4px solid rgba(0,0,0,0.4);
-            color: #ffffff; 
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8); /* Sombra fuerte para legibilidad */
-            transition: transform 0.2s;
-            /* Flexbox para centrar contenido */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        /* Estilos para replicar la tabla UAGRM espaciosa */
+        .uagrm-table th {
+            background-color: #eaf8ed;
+            color: #1a421f;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            padding: 16px 8px; /* Más espacio en el encabezado */
             text-align: center;
         }
-        .class-block:hover {
-            transform: scale(1.02);
-            z-index: 10;
+        .uagrm-table td {
+            border-bottom: 1px solid #f3f4f6;
         }
+        
         /* Ocultar barra de scroll para vista limpia */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -71,10 +38,9 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 font-sans h-screen flex flex-col overflow-hidden transition-colors duration-200">
 
-    <!-- Header UAGRM -->
+    <!-- Header Principal -->
     <header class="bg-blue-800 text-white p-4 shadow-md flex justify-between items-center z-20 shrink-0">
         <div class="flex items-center gap-3">
-            <!-- Botón de menú para celulares -->
             <button id="mobileMenuBtn" class="md:hidden text-white hover:bg-blue-700 p-2 rounded focus:outline-none" title="Abrir materias">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
@@ -87,23 +53,19 @@
                 <p class="text-xs text-blue-200">Santa Cruz</p>
             </div>
             <button id="themeToggle" class="bg-blue-900 hover:bg-blue-700 p-2 rounded-full transition-colors" title="Alternar Modo Oscuro">
-                <!-- Icono de Sol / Luna -->
-                <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden relative">
         
-        <!-- Overlay oscuro para celulares -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden transition-opacity"></div>
 
-        <!-- Panel Lateral (Se adapta en móviles como panel deslizable) -->
+        <!-- Panel Lateral -->
         <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-[85vw] sm:w-80 bg-white dark:bg-gray-800 shadow-2xl md:shadow-lg flex flex-col z-50 md:z-10 transition-transform duration-300 transform -translate-x-full md:translate-x-0 border-r border-gray-200 dark:border-gray-700 h-full md:h-auto">
-            
             <div class="p-4 md:p-5 border-b dark:border-gray-700 shrink-0 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
                 <h2 class="font-bold text-gray-800 dark:text-gray-100">Agregar Materia</h2>
-                <!-- Botón cerrar solo visible en móviles -->
                 <button id="closeSidebarBtn" class="md:hidden text-gray-500 hover:text-red-500 p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -116,28 +78,23 @@
                         <option value="">Seleccione una materia...</option>
                     </select>
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-sm text-gray-600 dark:text-gray-300 mb-1">Grupo y Docente</label>
                     <select id="groupSelect" class="w-full border p-2 rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" disabled>
                         <option value="">Seleccione grupo...</option>
                     </select>
                 </div>
-
                 <button id="addBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base shadow-md">
                     Agregar al Horario
                 </button>
             </div>
 
-            <!-- Lista de materias agregadas -->
+            <!-- Lista de materias -->
             <div class="p-3 md:p-5 flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800/50">
                 <h3 class="font-bold text-gray-700 dark:text-gray-200 mb-2 md:mb-3 text-sm">Materias Inscritas <span id="materiasCounter" class="text-blue-600 dark:text-blue-400">(0)</span></h3>
-                <ul id="addedList" class="space-y-2 md:space-y-3">
-                    <!-- Items se agregan aquí -->
-                </ul>
+                <ul id="addedList" class="space-y-2 md:space-y-3"></ul>
             </div>
 
-            <!-- Botón de descarga -->
             <div class="p-3 md:p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0">
                 <button id="downloadBtn" class="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 md:py-2 px-4 rounded transition-colors flex justify-center items-center gap-2 text-sm md:text-base shadow-md">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -146,32 +103,46 @@
             </div>
         </aside>
 
-        <!-- Calendario (Permite scroll) -->
-        <main class="flex-1 overflow-auto bg-white dark:bg-gray-900 p-2 md:p-6 transition-colors duration-200">
-            <!-- Contenedor que será capturado como imagen -->
-            <div id="captureArea" class="min-w-[800px] max-w-[1000px] w-full bg-white dark:bg-gray-900 p-2 md:p-4 rounded-lg mx-auto">
-                <!-- Días de la semana -->
-                <div class="flex ml-16 mb-2">
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Lunes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Martes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Miércoles</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Jueves</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Viernes</div>
-                    <div class="flex-1 text-center font-bold text-gray-600 dark:text-gray-300 border-b-2 border-blue-600 pb-2 text-sm md:text-base">Sábado</div>
+        <!-- Calendario Principal -->
+        <main class="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 p-2 md:p-6 transition-colors duration-200 flex justify-center items-start">
+            
+            <!-- CONTENEDOR PARA CAPTURA: Más ancho para que no se apriete -->
+            <div id="captureArea" class="w-full max-w-6xl bg-white p-4 md:p-8 rounded shadow-sm text-gray-800 font-sans min-w-[800px]">
+                <!-- Encabezado del reporte -->
+                <div class="flex justify-between items-start mb-6">
+                    <div class="text-sm">
+                        <h2 class="text-gray-500 text-2xl font-normal mb-2">UAGRM</h2>
+                        <p class="mb-1 text-base"><strong class="font-semibold text-gray-700">Carrera:</strong> 157-1 DERECHO</p>
+                        <p class="text-base"><strong class="font-semibold text-gray-700">Lugar:</strong> SANTA CRUZ</p>
+                    </div>
                 </div>
 
-                <div class="flex relative">
-                    <!-- Eje de horas -->
-                    <div class="w-16 shrink-0 border-r border-gray-200 dark:border-gray-700" id="timeAxis">
-                        <!-- Generado por JS (07:00 a 22:00) -->
-                    </div>
+                <!-- Tabla de horarios -->
+                <div class="overflow-hidden">
+                    <table class="w-full text-center border-collapse uagrm-table table-fixed">
+                        <thead>
+                            <tr>
+                                <th class="w-28 sm:w-32">HORARIO</th>
+                                <th>Lun</th>
+                                <th>Mar</th>
+                                <th>Mie</th>
+                                <th>Jue</th>
+                                <th>Vie</th>
+                                <th>Sab</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Filas generadas por JS dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
 
-                    <!-- Contenedor de las cajas del horario -->
-                    <div class="calendar-container flex-1" id="calendar">
-                        <!-- Clases dibujadas por JS -->
-                    </div>
+                <!-- Footer del reporte -->
+                <div id="materiasFooter" class="mt-6 pt-4 text-sm text-gray-600 uppercase font-medium border-t border-gray-100">
+                    MATERIAS 0 :
                 </div>
             </div>
+
         </main>
     </div>
 
@@ -189,7 +160,7 @@
             }
         });
 
-        // Lógica Sidebar Móvil
+        // Sidebar Móvil
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -204,7 +175,7 @@
         closeSidebarBtn.addEventListener('click', toggleSidebar);
         overlay.addEventListener('click', toggleSidebar);
 
-        // Funcionalidad para Descargar como Imagen
+        // Captura de Pantalla
         document.getElementById('downloadBtn').addEventListener('click', () => {
             const element = document.getElementById('captureArea');
             const btn = document.getElementById('downloadBtn');
@@ -212,14 +183,13 @@
             btn.innerHTML = 'Descargando...';
             btn.disabled = true;
 
-            // Ocultar sidebar temporalmente en móviles si está abierto al tomar captura (por seguridad)
             if (window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
                 toggleSidebar();
             }
 
             html2canvas(element, {
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#111827' : '#ffffff',
-                scale: 2 // Mayor calidad
+                backgroundColor: '#ffffff',
+                scale: 2
             }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Horario_UAGRM.png';
@@ -229,14 +199,14 @@
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }).catch(err => {
-                console.error('Error al generar la imagen', err);
-                alert('Ocurrió un error al intentar descargar la imagen.');
+                console.error(err);
+                alert('Error al descargar la imagen.');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             });
         });
 
-        // Datos extraídos y formateados para su fácil procesamiento
+        // Datos del horario
         const rawData = `
 DER300-DERECHO LABORAL, SU PROCEDIMIENTO Y PRACTICA FOREN
 A1-POR DESIGNAR
@@ -274,31 +244,13 @@ A1-OLMOS AMELUNGE JAIME ROLANDO
 Mi 10:45-13:00 185-14 |Vi 08:30-10:00 185-14 |
 B1-OLMOS AMELUNGE JAIME ROLANDO
 Lu 13:45-16:00 185-08 |Ju 13:45-15:15 185-08 |
-C1-OLMOS AMELUNGE JAIME ROLANDO
-Lu 21:15-22:45 185-17 |Mi 19:45-22:00 185-17 |
 D1-OLMOS AMELUNGE JAIME ROLANDO
 Ma 09:15-11:30 185-09 |Vi 10:00-11:30 185-09 |
 DV-POR DESIGNAR
 E1-OLMOS AMELUNGE JAIME ROLANDO
 Ma 13:45-16:00 185-05 |Ju 15:15-16:45 185-05 |
-F1-VERDUGUEZ TORREZ FREDDY OSVALDO
-Ju 18:15-19:45 185-10 |Sa 10:45-13:00 0|
-G1-ABUJDER BALDERAS MARIA DEL CARMEN
-Ma 10:00-12:15 185-05 |Vi 10:00-11:30 185-05 |
-H1-SAAVEDRA GUARDIA JUAN CARLOS
-Lu 13:45-16:00 185-02 |Ju 15:15-16:45 185-02 |
-I1-JURADO PEREDO GUALBERTO
-Lu 18:15-19:45 185-06 |Ju 18:15-20:30 185-06 |
-J1-ROMERO CUELLAR HERLAN
-Lu 08:30-10:45 185-15 |Mi 07:00-08:30 185-15 |
-K1-PAREDES VILLALBA VILMA MARGARITA
-Ma 18:15-19:45 185-15 |Ju 18:15-20:30 185-15 |
 L1-OLMOS AMELUNGE JAIME ROLANDO
 Mi 08:30-10:45 185-01 |Ju 08:30-10:00 185-01 |
-M1-SALCES SANTISTEVAN HUGO
-Lu 19:45-22:00 185-12 |Ma 19:45-21:15 185-12 |
-N1-MANRIQUE OSINAGA ANGEL DAVID
-Ju 20:30-22:45 185-09 |Vi 21:15-22:45 185-09 |
 
 DER304-DERECHO PROCESAL CIVIL Y PRAC. FORENSE
 A1-VERA CANELLAS DE GIL TERESA
@@ -393,30 +345,25 @@ Lu 18:15-19:45 185-12 |Mi 18:15-19:45 185-12 |Sa 07:00-08:30 185-12 |
 N1-LIJERON BANEGAS SAUL
 Mi 19:45-21:15 185-09 |Mi 21:15-22:45 185-09 |Sa 10:45-12:15 185-17 |
 
+DER400-DERECHO A LA SEGURIDAD SOCIAL,PROCED.Y PRAC.FORENS
+A1-SUAREZ AGUILAR ANTONIO
+Mi 07:00-08:30 185-11 |Ju 11:30-13:00 185-11 |
+DV-GUERRERO ENCINA ADOLFO
+I1-MENACHO AGUILAR MANFREDO
+Mi 07:00-08:30 185-16 |Ju 11:30-13:00 185-16 |
+L1-SUAREZ AGUILAR ANTONIO
+Mi 15:15-16:45 0|Sa 09:15-10:45 0|
+
 DER401-DERECHO COMERCIAL Y EMPRESARIAL
 A1-LOAYZA SALVATIERRA GRACIELA
 Vi 07:00-08:30 185-11 |Sa 10:00-12:15 185-05 |
-B1-CORONADO LOAIZA JULIO
-Vi 13:45-15:15 185-03 |Sa 07:00-09:15 185-10 |
-C1-SAAVEDRA GUARDIA JUAN CARLOS
-Vi 19:45-21:15 185-08 |Sa 10:45-13:00 185-08 |
 D1-VERDUGUEZ TORREZ FREDDY OSVALDO
 Vi 11:30-13:45 185-17 |Sa 09:15-10:45 185-17 |
 DV-POR DESIGNAR
 E1-VERDUGUEZ TORREZ FREDDY OSVALDO
 Ma 16:45-18:15 185-04 |Sa 07:00-09:15 185-04 |
-F1-GOMEZ BOLAND JAIME RONALD
-Lu 19:45-21:15 185-07 |Ju 20:30-22:45 185-07 |
-G1-SAAVEDRA GUARDIA JUAN CARLOS
-Lu 10:00-11:30 185-12 |Mi 10:45-13:00 185-12 |
-H1-FRANCO PANIAGUA HUGO
-Mi 21:15-22:45 185-03 |Sa 11:30-13:45 185-03 |
 I1-ARDUZ VARGAS YENNY TERESA
 Ju 10:00-11:30 185-16 |Vi 10:45-13:00 185-16 |
-K1-LOAYZA SALVATIERRA GRACIELA
-Lu 19:45-21:15 185-04 |Mi 19:45-22:00 185-04 |
-L1-AYALA PERROGON LUDWING
-Lu 15:15-16:45 185-11 |Vi 16:00-18:15 185-11 |
 
 DER404-DERECHO BANCARIO BURSATIL Y COOPERATIVO
 A1-CASTEDO VACA JORGE
@@ -443,6 +390,38 @@ Ju 21:15-22:45 185-04 |Vi 19:00-20:30 185-04 |
 L1-PAREDES VILLALBA VILMA MARGARITA
 Ma 16:45-18:15 185-11 |Ju 16:45-18:15 185-11 |
 
+DER405-DERECHO INFORMATICO
+C1-POR DESIGNAR
+Ma 19:45-21:15 185-08 |Vi 18:15-19:45 185-08 |
+D1-MONTES ALFREDO
+Lu 08:30-10:00 185-17 |Ju 08:30-10:00 185-17 |
+DV-POR DESIGNAR
+G1-RIVERO DURAN JUAN FERNANDO
+Ma 10:00-11:30 185-12 |Ju 10:00-11:30 185-12 |
+H1-PEREZ PEREDO RICARDO
+Ma 21:15-22:45 185-03 |Sa 07:00-08:30 0|
+K1-DURAN GUERRERO MARTHA EUGENIA
+Vi 21:15-22:45 185-04 |Sa 13:45-15:15 0|
+L1-PEREZ PEREDO RICARDO
+Lu 13:45-15:15 185-11 |Mi 13:45-15:15 185-11 |
+
+DER406-DERECHO INTERNACIONAL PUBLICO Y PRIVADO
+A1-PANIAGUA FLORES SAUL
+Mi 08:30-10:45 185-11 |Vi 08:30-10:00 185-11 |
+B1-MONTES ALFREDO
+Lu 15:15-16:45 185-03 |Ju 13:45-16:00 185-03 |
+C1-GOMEZ BOLAND JAIME RONALD
+Mi 19:45-21:15 185-08 |Sa 07:00-09:15 0|
+D1-PANIAGUA FLORES SAUL
+Ma 09:15-11:30 185-17 |Ju 11:30-13:00 0|
+DV-POR DESIGNAR
+G1-SALVATIERRA NEGRETE RENY
+Lu 08:30-10:00 185-12 |Ma 11:30-13:45 185-12 |
+I1-ROCA SERRANO MARIA SONIA ELIANA
+Lu 11:30-13:00 185-16 |Vi 08:30-10:45 185-16 |
+K1-FERREIRA JUSTINIANO REYMI LUIS
+Ma 20:30-22:45 185-04 |Sa 10:45-12:15 0|
+
 DER407-TALLER DE TESIS
 A1-PAREDES VILLALBA VILMA MARGARITA
 Ma 10:45-13:00 0|Ju 10:00-11:30 0|
@@ -467,45 +446,70 @@ Vi 16:45-18:15 0|Sa 07:00-09:15 0|
 K1-MONTENEGRO HURTADO ROSA MARÍA
 Ju 18:15-20:30 0|Sa 08:30-10:00 0|
 
+DER501-DERECHO PROCESAL AGRARIO Y SU PROCESO ORAL
+A1-SANDOVAL HURTADO CARMEN ADELAIDA
+Ma 10:00-11:30 185-13 |Mi 10:00-11:30 185-13 |
+B1-POR DESIGNAR
+Mi 15:15-16:45 185-01 |Ju 13:45-15:15 185-01 |
+C1-SOTO PINTO REMBERTO
+Vi 19:45-21:15 185-02 |Sa 08:30-10:00 185-02 |
+D1-LOPEZ DIAZ SALOMON
+Ma 08:30-10:00 170-07 |Ju 10:00-11:30 170-07 |
+DV-POR DESIGNAR
+E1-LOPEZ DIAZ SALOMON
+Lu 21:15-22:45 185-01 |Sa 07:00-08:30 185-01 |
+
 DER502-DERECHO MINERO Y PETROLERO
 A1-ROJAS DOMINGUEZ MIGUEL
 Lu 08:30-10:00 185-13 |Ju 08:30-10:45 185-13 |
-B1-ROJAS DOMINGUEZ MIGUEL
-Lu 13:45-15:15 185-01 |Mi 13:45-15:15 185-01 |Vi 13:45-15:15 185-01 |
 C1-CABALLERO VILLARROEL MARIA ROSARIO
 Lu 20:30-22:45 185-02 |Mi 21:15-22:45 185-02 |
 D1-ROJAS DOMINGUEZ MIGUEL
 Lu 10:00-11:30 170-07 |Mi 10:00-11:30 170-07 |Vi 10:00-11:30 170-07 |
-E1-ROJAS JUSTINIANO RICHARD BERNARDO
-Lu 18:15-19:45 185-01 |Ju 19:45-21:15 185-01 |Vi 18:15-19:45 185-01 |
 DV-POR DESIGNAR
 F1-VIDAL ROSADO DANIEL ALFONSO
 Ju 19:45-22:00 185-05 |Sa 08:30-10:00 0|
 G1-MENACHO MARISCAL RENE
 Lu 19:00-20:30 115-06 |Ju 19:45-21:15 115-06 |Sa 07:00-08:30 0|
-H1-CABALLERO TRUJILLO LIMBER
-Lu 19:45-21:15 185-16 |Vi 21:15-22:45 185-16 |Sa 15:15-16:45 0|
-I1-ROJAS JUSTINIANO RICHARD BERNARDO
-Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
 `;
 
-        // Colores vívidos y distintos para las materias
-        const classColors = [
-            '#e63946', '#2a9d8f', '#e76f51', '#3a86ff', '#8338ec', 
-            '#ff006e', '#fb5607', '#06d6a0', '#118ab2', '#d90429', 
-            '#9d4edd', '#f4a261', '#2ec4b6', '#c1121f', '#7209b7'
+        // Tonos chillones/vibrantes
+        const vibrantColors = [
+            '#c4f069', // Verde lima
+            '#e89bf5', // Rosa chicle
+            '#fced74', // Amarillo brillante
+            '#fca35d', // Naranja brillante
+            '#b0bdfa', // Azul lavanda
+            '#8df0d6', // Turquesa
+            '#ff9eaa', // Salmón claro
+            '#75e6a4', // Verde menta
+            '#e8b0ff', // Lila brillante
+            '#ffdb58'  // Amarillo oro
+        ];
+
+        // Bloques de horario oficiales de la UAGRM (45 min)
+        const masterPeriods = [
+            { s: '07:00', e: '07:45' }, { s: '07:45', e: '08:30' },
+            { s: '08:30', e: '09:15' }, { s: '09:15', e: '10:00' },
+            { s: '10:00', e: '10:45' }, { s: '10:45', e: '11:30' },
+            { s: '11:30', e: '12:15' }, { s: '12:15', e: '13:00' },
+            { s: '13:00', e: '13:45' }, { s: '13:45', e: '14:30' },
+            { s: '14:30', e: '15:15' }, { s: '15:15', e: '16:00' },
+            { s: '16:00', e: '16:45' }, { s: '16:45', e: '17:30' },
+            { s: '17:30', e: '18:15' }, { s: '18:15', e: '19:00' },
+            { s: '19:00', e: '19:45' }, { s: '19:45', e: '20:30' },
+            { s: '20:30', e: '21:15' }, { s: '21:15', e: '22:00' },
+            { s: '22:00', e: '22:45' }
         ];
         
         let subjects = {};
         let mySchedule = [];
 
-        // Función para convertir "HH:MM" a minutos desde las 00:00
         function timeToMinutes(t) {
             let [h, m] = t.split(':').map(Number);
             return (h * 60) + m;
         }
 
-        // Parseador del texto de la UAGRM
         function parseData() {
             const lines = rawData.split('\n').map(l => l.trim()).filter(l => l);
             let currentSubj = null;
@@ -546,18 +550,6 @@ Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
             });
         }
 
-        // Renderizar eje de horas
-        function renderTimeAxis() {
-            const axis = document.getElementById('timeAxis');
-            for(let h = 7; h <= 22; h++) {
-                let div = document.createElement('div');
-                div.className = 'time-label';
-                div.innerText = h.toString().padStart(2, '0') + ':00';
-                axis.appendChild(div);
-            }
-        }
-
-        // Inicializar combos
         function initSelects() {
             const subjSelect = document.getElementById('subjectSelect');
             Object.values(subjects).forEach(s => {
@@ -593,76 +585,93 @@ Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
             });
         }
 
-        // Calcular posición Y en el calendario
-        function getTimeStyles(timeString) {
-            const [start, end] = timeString.split('-');
-            const startMins = timeToMinutes(start) - (7 * 60); // Base 07:00
-            const endMins = timeToMinutes(end) - (7 * 60);
-            
-            return {
-                top: startMins + 'px',   // 1px = 1min
-                height: (endMins - startMins) + 'px'
-            };
-        }
-
-        const dayMap = { 'Lu': 0, 'Ma': 1, 'Mi': 2, 'Ju': 3, 'Vi': 4, 'Sa': 5 };
-
         function renderCalendar() {
-            const container = document.getElementById('calendar');
-            container.innerHTML = '';
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
             
-            // Dibujar lineas divisorias de columnas usando clases CSS en lugar de estilos fijos
-            for(let i=1; i<6; i++){
-                let line = document.createElement('div');
-                line.className = 'absolute top-0 bottom-0 border-l border-gray-200 dark:border-gray-700';
-                line.style.left = (i * 16.66) + '%';
-                container.appendChild(line);
+            if(mySchedule.length === 0) {
+                document.getElementById('materiasFooter').innerText = 'MATERIAS 0 :';
+                return; // No mostramos ninguna fila si no hay materias
             }
 
-            mySchedule.forEach((item, index) => {
-                const color = classColors[index % classColors.length];
+            masterPeriods.forEach(p => {
+                const pStart = timeToMinutes(p.s);
+                const pEnd = timeToMinutes(p.e);
                 
-                item.group.sessions.forEach(session => {
-                    let block = document.createElement('div');
-                    block.className = 'class-block';
-                    block.style.backgroundColor = color;
-                    
-                    let colIndex = dayMap[session.dia];
-                    block.style.left = (colIndex * 16.66) + '%';
-                    block.style.width = '16.66%';
-                    
-                    const pos = getTimeStyles(session.times);
-                    block.style.top = pos.top;
-                    block.style.height = pos.height;
-
-                    block.innerHTML = `
-                        <strong class="text-[0.85rem] leading-tight mb-1">${item.subject.id} (${item.group.id})</strong>
-                        <span class="text-xs font-medium">${session.times}</span>
-                        <span class="text-[0.7rem] font-medium opacity-90">Aula: ${session.aula}</span>
-                    `;
-                    container.appendChild(block);
+                let hasClassInRow = false;
+                const days = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'];
+                let rowData = days.map(day => {
+                    let cellData = null;
+                    for(let i=0; i<mySchedule.length; i++) {
+                        const item = mySchedule[i];
+                        for(let session of item.group.sessions) {
+                            if(session.dia === day) {
+                                const [sStart, sEnd] = session.times.split('-');
+                                const cStart = timeToMinutes(sStart);
+                                const cEnd = timeToMinutes(sEnd);
+                                
+                                // Si el bloque está dentro del rango de la clase
+                                if(pStart >= cStart && pEnd <= cEnd) {
+                                    cellData = {
+                                        bg: vibrantColors[i % vibrantColors.length],
+                                        text: `${item.subject.id}<br>- ${item.group.id}`
+                                    };
+                                    hasClassInRow = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(cellData) break;
+                    }
+                    return cellData;
                 });
+
+                // Solo agregamos la fila si al menos una materia cae en este horario
+                if(!hasClassInRow) return;
+
+                let rowHtml = `<tr>`;
+                rowHtml += `<td class="text-[#555] align-middle w-28 py-4" style="font-size: 14px;">${p.s} -<br>${p.e}</td>`;
+                
+                rowData.forEach(cell => {
+                    if(cell) {
+                        rowHtml += `<td class="text-gray-800 align-middle px-2 py-4" style="background-color: ${cell.bg}; font-size: 14px;">
+                            <div class="flex flex-col items-center justify-center font-normal leading-relaxed gap-1">
+                                <span>${cell.text.split('<br>')[0]}</span>
+                                <span>${cell.text.split('<br>')[1]}</span>
+                            </div>
+                        </td>`;
+                    } else {
+                        rowHtml += `<td></td>`;
+                    }
+                });
+                
+                rowHtml += `</tr>`;
+                tbody.innerHTML += rowHtml;
             });
+
+            // Actualizar pie de tabla
+            const footer = document.getElementById('materiasFooter');
+            const names = mySchedule.map(s => s.subject.id).join(', ');
+            footer.innerText = `MATERIAS ${mySchedule.length} : ${names}`;
         }
 
         function renderList() {
             const list = document.getElementById('addedList');
             const counter = document.getElementById('materiasCounter');
             list.innerHTML = '';
-            
             if (counter) counter.innerText = `(${mySchedule.length})`;
             
             mySchedule.forEach((item, index) => {
                 const li = document.createElement('li');
                 li.className = "bg-white dark:bg-gray-700 p-2 md:p-3 rounded shadow-sm border-l-4 text-xs md:text-sm flex justify-between items-center transition-colors duration-200";
-                li.style.borderLeftColor = classColors[index % classColors.length];
+                li.style.borderLeftColor = vibrantColors[index % vibrantColors.length];
                 
                 li.innerHTML = `
                     <div>
                         <p class="font-bold text-gray-800 dark:text-gray-100">${item.subject.id}</p>
                         <p class="text-[10px] md:text-xs text-gray-500 dark:text-gray-400">Grp: ${item.group.id} - ${item.group.docente}</p>
                     </div>
-                    <button onclick="removeClass(${index})" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1">
+                    <button onclick="removeClass(${index})" class="text-red-500 hover:text-red-700 dark:text-red-400 p-1">
                         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 `;
@@ -689,11 +698,10 @@ Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
             const group = subject.groups[groupId];
             
             if(group.sessions.length === 0) {
-                alert("Este grupo no tiene horarios definidos en el sistema.");
+                alert("Este grupo no tiene horarios definidos.");
                 return;
             }
 
-            // --- DETECCIÓN DE CHOQUES DE HORARIO ---
             for (let newSession of group.sessions) {
                 let [newStartStr, newEndStr] = newSession.times.split('-');
                 let newStart = timeToMinutes(newStartStr);
@@ -706,10 +714,9 @@ Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
                             let exStart = timeToMinutes(exStartStr);
                             let exEnd = timeToMinutes(exEndStr);
 
-                            // Condición de solapamiento
                             if (newStart < exEnd && newEnd > exStart) {
                                 alert(`¡Choque de horarios!\n\nLa materia "${subject.id} (${groupId})" choca con "${existingItem.subject.id} (${existingItem.group.id})" el día ${newSession.dia} en el horario de ${existingSession.times}.`);
-                                return; // Evita que se agregue
+                                return;
                             }
                         }
                     }
@@ -718,7 +725,6 @@ Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
 
             mySchedule.push({ subject, group });
             
-            // Limpiar combos
             document.getElementById('subjectSelect').value = '';
             document.getElementById('groupSelect').innerHTML = '<option value="">Seleccione grupo...</option>';
             document.getElementById('groupSelect').disabled = true;
@@ -727,17 +733,15 @@ Lu 19:45-22:00 185-24 |Ju 18:15-19:45 185-24 |
             renderCalendar();
             renderList();
 
-            // Cerrar sidebar en móviles tras agregar correctamente la materia
             if (window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
                 toggleSidebar();
             }
         });
 
-        // Inicio
+        // Inicialización
         parseData();
-        renderTimeAxis();
         initSelects();
-
+        renderCalendar();
     </script>
 </body>
 </html>
